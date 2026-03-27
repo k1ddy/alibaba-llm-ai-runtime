@@ -56,6 +56,15 @@ uvicorn alibaba_llm_ai_runtime.app:app --reload
 pytest
 ```
 
+## Quality / Regression
+Локальный quality-контур запускается так:
+```bash
+python scripts/run_quality.py --run-id local-quality
+```
+
+Golden dataset лежит в:
+- `quality/golden_cases.json`
+
 ## Локальный Источник Знаний
 Текущий source-of-truth для bounded demo лежит в:
 - `knowledge/source/`

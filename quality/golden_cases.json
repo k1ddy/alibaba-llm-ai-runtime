@@ -1,0 +1,104 @@
+[
+  {
+    "id": "grounded-answer",
+    "description": "Проверка grounded answer path с citations.",
+    "steps": [
+      {
+        "request": {
+          "session_id": "quality-grounded-1",
+          "user_message": "Which repository owns cloud foundation resources?",
+          "context": {
+            "channel": "quality"
+          }
+        },
+        "expect": {
+          "outcome": "answer",
+          "policy_state": "allow",
+          "model_provider": "stub",
+          "citations_min": 1,
+          "response_contains": "retrieved_chunks="
+        }
+      }
+    ]
+  },
+  {
+    "id": "no-hit-fallback",
+    "description": "Проверка no-hit fallback для неизвестного вопроса.",
+    "steps": [
+      {
+        "request": {
+          "session_id": "quality-fallback-1",
+          "user_message": "Need CUDA workstation advice",
+          "context": {
+            "channel": "quality"
+          }
+        },
+        "expect": {
+          "outcome": "answer",
+          "policy_state": "allow",
+          "model_provider": "retrieval-fallback",
+          "citations_min": 0,
+          "response_contains": "I don't know based on the current local knowledge base."
+        }
+      }
+    ]
+  },
+  {
+    "id": "tool-queued",
+    "description": "Проверка action path с подтверждённой эскалацией.",
+    "steps": [
+      {
+        "request": {
+          "session_id": "quality-tool-queued-1",
+          "user_message": "Please escalate this issue.",
+          "requested_tool": "escalate_to_human",
+          "tool_input": {
+            "reason": "Customer needs a human callback",
+            "requested_by": "quality-user",
+            "contact": "telegram:@quality",
+            "confirmed": true
+          },
+          "context": {
+            "channel": "quality"
+          }
+        },
+        "expect": {
+          "outcome": "action",
+          "policy_state": "allow",
+          "model_provider": "tool-executor",
+          "tool_status": "queued",
+          "response_contains": "Escalation queued"
+        }
+      }
+    ]
+  },
+  {
+    "id": "tool-blocked",
+    "description": "Проверка blocked action path без подтверждения.",
+    "steps": [
+      {
+        "request": {
+          "session_id": "quality-tool-blocked-1",
+          "user_message": "Escalate now.",
+          "requested_tool": "escalate_to_human",
+          "tool_input": {
+            "reason": "Customer asks for a manager",
+            "requested_by": "quality-user",
+            "contact": "telegram:@quality",
+            "confirmed": false
+          },
+          "context": {
+            "channel": "quality"
+          }
+        },
+        "expect": {
+          "outcome": "action",
+          "policy_state": "blocked",
+          "model_provider": "tool-executor",
+          "tool_status": "blocked",
+          "response_contains": "confirmation required"
+        }
+      }
+    ]
+  }
+]

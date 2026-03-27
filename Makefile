@@ -1,7 +1,7 @@
 PYTHON ?= python3
 VENV ?= .venv
 
-.PHONY: venv install test run
+.PHONY: venv install test run quality
 
 venv:
 	$(PYTHON) -m venv $(VENV)
@@ -14,3 +14,6 @@ test:
 
 run:
 	. $(VENV)/bin/activate && uvicorn alibaba_llm_ai_runtime.app:app --reload
+
+quality:
+	. $(VENV)/bin/activate && python scripts/run_quality.py --run-id local-quality

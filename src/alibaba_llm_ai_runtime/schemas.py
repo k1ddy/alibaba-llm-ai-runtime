@@ -1,0 +1,27 @@
+from typing import Any, Literal
+from uuid import uuid4
+
+from pydantic import BaseModel, Field
+
+
+class HealthResponse(BaseModel):
+    status: Literal["ok"]
+    service: str
+    environment: str
+
+
+class TurnRequest(BaseModel):
+    session_id: str = Field(min_length=1, max_length=128)
+    user_message: str = Field(min_length=1, max_length=4000)
+    context: dict[str, Any] = Field(default_factory=dict)
+
+
+class TurnResponse(BaseModel):
+    request_id: str = Field(default_factory=lambda: str(uuid4()))
+    trace_id: str
+    session_id: str
+    outcome: Literal["answer"]
+    response_text: str
+    citations: list[str] = Field(default_factory=list)
+    tools: list[str] = Field(default_factory=list)
+    policy_state: Literal["allow"] = "allow"

@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alibaba-llm-ai-runtime"
+version = "0.1.0"
+description = "Minimal FastAPI runtime scaffold for the Alibaba LLM platform path."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.135.2,<0.136.0",
+  "uvicorn[standard]>=0.42.0,<0.43.0",
+  "pydantic-settings>=2.13.1,<2.14.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "httpx>=0.28.1,<0.29.0",
+  "pytest>=9.0.2,<10.0.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+addopts = "-q"
+testpaths = ["tests"]

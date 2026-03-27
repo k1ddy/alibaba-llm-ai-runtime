@@ -1,33 +1,33 @@
 # Alibaba LLM AI Runtime
 
-Minimal `FastAPI` runtime scaffold for the platform path.
+Минимальный runtime-репозиторий на `FastAPI` для platform path.
 
-## What This Repo Owns
-- HTTP runtime entrypoints
-- request and response schemas
-- minimal semantic-owner contract
-- runtime configuration
-- container packaging for local and cluster execution
+## Что Этот Репозиторий Делает
+- HTTP runtime entrypoints;
+- request/response schemas;
+- semantic-owner contract;
+- runtime configuration;
+- container packaging для локального запуска и будущего запуска в кластере.
 
-## What This Repo Does Not Own Yet
-- retrieval pipelines
-- tool servers
-- eval harness
-- GitOps deployment state
-- Terraform-managed cloud resources
+## Что Этот Репозиторий Пока Не Делает
+- не хранит retrieval pipelines как отдельный ingestion layer;
+- не хранит tool servers;
+- не хранит eval harness;
+- не хранит GitOps deployment state;
+- не управляет Terraform-ресурсами.
 
-## Current Scope
-This is a bounded `v1` runtime skeleton:
+## Текущее Состояние
+Сейчас это bounded `v1` runtime:
 - `GET /healthz`
 - `POST /v1/runtime/turn`
-- request id and trace id handling
+- request id и trace id handling
 - bounded in-memory session state
-- local file-based retrieval with citations
+- локальный file-based retrieval с citations
 - configurable `LLM` provider boundary
-- deterministic `stub` mode by default
+- безопасный `stub` path по умолчанию
 - optional `DashScope` OpenAI-compatible adapter path
 
-## Local Run
+## Локальный Запуск
 ```bash
 python3 -m venv .venv
 . .venv/bin/activate
@@ -35,27 +35,27 @@ pip install -e '.[dev]'
 uvicorn alibaba_llm_ai_runtime.app:app --reload
 ```
 
-## Provider Configuration
-Copy `.env.example` to `.env` and adjust only when you want live model calls.
+## Конфигурация Провайдера
+Скопируй `.env.example` в `.env` и меняй настройки только если нужен live model path.
 
-Default local-safe mode:
+Безопасный локальный режим:
 - `AI_RUNTIME_LLM_PROVIDER=stub`
 - `AI_RUNTIME_SESSION_HISTORY_MAX_MESSAGES=12`
 - `AI_RUNTIME_KNOWLEDGE_SOURCE_DIR=knowledge/source`
 - `AI_RUNTIME_RETRIEVAL_TOP_K=2`
 
-Optional live adapter path:
+Опциональный live adapter path:
 - `AI_RUNTIME_LLM_PROVIDER=dashscope_openai_compatible`
-- `AI_RUNTIME_LLM_API_KEY=<your-model-studio-key>`
+- `AI_RUNTIME_LLM_API_KEY=<твой Model Studio key>`
 - `AI_RUNTIME_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1`
 
-## Tests
+## Тесты
 ```bash
 pytest
 ```
 
-## Local Knowledge Source
-Source-of-truth files for the current bounded demo live in:
+## Локальный Источник Знаний
+Текущий source-of-truth для bounded demo лежит в:
 - `knowledge/source/`
 
-The retrieval index is built in memory at runtime and is intentionally not persisted yet.
+Retrieval index пока строится только в памяти при старте runtime и не сохраняется отдельно.

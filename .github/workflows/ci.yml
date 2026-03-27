@@ -1,0 +1,65 @@
+name: CI
+
+run-name: CI / ${{ github.event_name }} / ${{ github.ref_name }}
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ai-runtime-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      AI_RUNTIME_LLM_PROVIDER: stub
+      AI_RUNTIME_TOOL_AUDIT_LOG_PATH: runtime_data/audit/tool-events.jsonl
+      AI_RUNTIME_OBSERVABILITY_LOG_PATH: runtime_data/observability/runtime-events.jsonl
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[dev]'
+
+      - name: Compile sources
+        run: python -m compileall src tests scripts
+
+      - name: Run unit tests
+        run: pytest
+
+      - name: Run local quality harness
+        run: python scripts/run_quality.py --run-id ci-quality
+
+      - name: Build container image
+        run: docker build -t alibaba-llm-ai-runtime:ci .
+
+      - name: Run container smoke check
+        run: ./scripts/smoke_container.sh alibaba-llm-ai-runtime:ci
+
+      - name: Upload quality artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-quality-${{ github.run_id }}
+          if-no-files-found: error
+          path: |
+            runtime_data/quality/ci-quality/summary.json
+            runtime_data/quality/ci-quality/brief.md
+            runtime_data/quality/ci-quality/tool-events.jsonl

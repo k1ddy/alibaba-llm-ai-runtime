@@ -3,11 +3,12 @@ from uuid import uuid4
 from fastapi import FastAPI, Header
 
 from .config import get_settings
+from .llm import build_model_client
 from .schemas import HealthResponse, TurnRequest, TurnResponse
 from .service import SemanticOwner
 
 settings = get_settings()
-owner = SemanticOwner()
+owner = SemanticOwner(build_model_client(settings), settings)
 
 app = FastAPI(
     title=settings.service_name,
@@ -31,4 +32,4 @@ async def runtime_turn(
     x_trace_id: str | None = Header(default=None),
 ) -> TurnResponse:
     trace_id = x_trace_id or str(uuid4())
-    return owner.respond(turn, trace_id)
+    return await owner.respond(turn, trace_id)

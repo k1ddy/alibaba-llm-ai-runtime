@@ -23,7 +23,9 @@ def test_runtime_turn_returns_bounded_response() -> None:
     assert payload["session_id"] == "session-1"
     assert payload["outcome"] == "answer"
     assert payload["policy_state"] == "allow"
+    assert payload["model_provider"] == "stub"
+    assert payload["model_name"] == "stub-local"
     assert payload["tools"] == []
     assert payload["citations"] == []
-    assert "Runtime scaffold active" in payload["response_text"]
+    assert "Stub provider active" in payload["response_text"]
     assert payload["request_id"]

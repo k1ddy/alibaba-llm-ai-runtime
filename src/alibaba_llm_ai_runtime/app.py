@@ -8,6 +8,7 @@ from .retrieval import LocalFileRetriever
 from .schemas import HealthResponse, TurnRequest, TurnResponse
 from .service import SemanticOwner
 from .sessions import InMemorySessionStore
+from .tools import ToolExecutor
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -26,6 +27,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         runtime_settings,
         app.state.session_store,
         LocalFileRetriever(runtime_settings.knowledge_source_dir),
+        ToolExecutor(runtime_settings.tool_audit_log_path),
     )
 
     @app.get("/healthz", response_model=HealthResponse)

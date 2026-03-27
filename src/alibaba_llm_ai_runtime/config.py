@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     session_history_max_messages: int = 12
     knowledge_source_dir: str = "knowledge/source"
     retrieval_top_k: int = 2
+    tool_audit_log_path: str = "runtime_data/audit/tool-events.jsonl"
     llm_provider: Literal["stub", "dashscope_openai_compatible"] = "stub"
     llm_model: str = "qwen-plus"
     llm_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"

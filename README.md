@@ -23,6 +23,7 @@
 - request id и trace id handling
 - bounded in-memory session state
 - локальный file-based retrieval с citations
+- локальный bounded tool path с audit trail
 - configurable `LLM` provider boundary
 - безопасный `stub` path по умолчанию
 - optional `DashScope` OpenAI-compatible adapter path
@@ -43,6 +44,7 @@ uvicorn alibaba_llm_ai_runtime.app:app --reload
 - `AI_RUNTIME_SESSION_HISTORY_MAX_MESSAGES=12`
 - `AI_RUNTIME_KNOWLEDGE_SOURCE_DIR=knowledge/source`
 - `AI_RUNTIME_RETRIEVAL_TOP_K=2`
+- `AI_RUNTIME_TOOL_AUDIT_LOG_PATH=runtime_data/audit/tool-events.jsonl`
 
 Опциональный live adapter path:
 - `AI_RUNTIME_LLM_PROVIDER=dashscope_openai_compatible`
@@ -59,3 +61,12 @@ pytest
 - `knowledge/source/`
 
 Retrieval index пока строится только в памяти при старте runtime и не сохраняется отдельно.
+
+## Локальный Tool Boundary
+Сейчас доступен один bounded local tool:
+- `escalate_to_human`
+
+Это explicit action path:
+- tool вызывается только через `requested_tool`;
+- tool пишет audit trail в локальный `jsonl` файл;
+- risky action требует `confirmed=true`.

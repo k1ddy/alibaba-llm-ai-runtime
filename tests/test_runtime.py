@@ -99,9 +99,78 @@ def test_runtime_turn_returns_grounded_fallback_when_no_documents_match() -> Non
     assert payload["response_text"] == "I don't know based on the current local knowledge base."
 
 
-def _settings_with_demo_knowledge() -> Settings:
+def test_runtime_turn_executes_explicit_tool_and_writes_audit(tmp_path: Path) -> None:
+    settings = _settings_with_demo_knowledge(tmp_path)
+    client = TestClient(create_app(settings))
+
+    response = client.post(
+        "/v1/runtime/turn",
+        headers={"x-trace-id": "trace-tool-1"},
+        json={
+            "session_id": "session-tool-1",
+            "user_message": "Please escalate this issue.",
+            "requested_tool": "escalate_to_human",
+            "tool_input": {
+                "reason": "Customer needs a human callback",
+                "requested_by": "demo-user",
+                "contact": "telegram:@demo",
+                "confirmed": True,
+            },
+            "context": {"channel": "demo"},
+        },
+    )
+
+    payload = response.json()
+    audit_lines = settings.tool_audit_log_path
+
+    assert response.status_code == 200
+    assert payload["outcome"] == "action"
+    assert payload["policy_state"] == "allow"
+    assert payload["model_provider"] == "tool-executor"
+    assert payload["tools"] == ["escalate_to_human"]
+    assert payload["tool_results"][0]["status"] == "queued"
+    assert Path(audit_lines).exists()
+
+
+def test_runtime_turn_blocks_tool_without_confirmation(tmp_path: Path) -> None:
+    settings = _settings_with_demo_knowledge(tmp_path)
+    client = TestClient(create_app(settings))
+
+    response = client.post(
+        "/v1/runtime/turn",
+        headers={"x-trace-id": "trace-tool-2"},
+        json={
+            "session_id": "session-tool-2",
+            "user_message": "Escalate now.",
+            "requested_tool": "escalate_to_human",
+            "tool_input": {
+                "reason": "Customer asks for a manager",
+                "requested_by": "demo-user",
+                "contact": "telegram:@demo",
+                "confirmed": False,
+            },
+            "context": {"channel": "demo"},
+        },
+    )
+
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert payload["outcome"] == "action"
+    assert payload["policy_state"] == "blocked"
+    assert payload["tool_results"][0]["status"] == "blocked"
+    assert payload["response_text"] == "Tool request blocked: confirmation required."
+
+
+def _settings_with_demo_knowledge(tmp_path: Path | None = None) -> Settings:
     knowledge_dir = Path(__file__).resolve().parents[1] / "knowledge" / "source"
+    audit_path = (
+        tmp_path / "tool-events.jsonl"
+        if tmp_path is not None
+        else Path("runtime_data/audit/tool-events.jsonl")
+    )
     return Settings(
         knowledge_source_dir=str(knowledge_dir),
         retrieval_top_k=1,
+        tool_audit_log_path=str(audit_path),
     )

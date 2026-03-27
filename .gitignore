@@ -5,4 +5,5 @@ __pycache__/
 .coverage
 *.egg-info/
 .env
-runtime_data/
+runtime_data/*
+!runtime_data/.gitkeep

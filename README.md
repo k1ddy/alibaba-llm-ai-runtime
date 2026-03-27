@@ -45,6 +45,7 @@ uvicorn alibaba_llm_ai_runtime.app:app --reload
 - `AI_RUNTIME_KNOWLEDGE_SOURCE_DIR=knowledge/source`
 - `AI_RUNTIME_RETRIEVAL_TOP_K=2`
 - `AI_RUNTIME_TOOL_AUDIT_LOG_PATH=runtime_data/audit/tool-events.jsonl`
+- `AI_RUNTIME_OBSERVABILITY_LOG_PATH=runtime_data/observability/runtime-events.jsonl`
 
 Опциональный live adapter path:
 - `AI_RUNTIME_LLM_PROVIDER=dashscope_openai_compatible`
@@ -79,3 +80,11 @@ Retrieval index пока строится только в памяти при с
 - tool вызывается только через `requested_tool`;
 - tool пишет audit trail в локальный `jsonl` файл;
 - risky action требует `confirmed=true`.
+
+## Локальная Наблюдаемость
+Runtime пишет structured execution events в локальный `jsonl` файл:
+- `health_checked`
+- `turn_received`
+- `retrieval_completed`
+- `tool_executed`
+- `turn_completed`

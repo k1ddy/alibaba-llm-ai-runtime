@@ -20,6 +20,8 @@ class TurnResponse(BaseModel):
     request_id: str = Field(default_factory=lambda: str(uuid4()))
     trace_id: str
     session_id: str
+    session_turn_index: int
+    history_messages_used: int
     outcome: Literal["answer"]
     response_text: str
     model_provider: str

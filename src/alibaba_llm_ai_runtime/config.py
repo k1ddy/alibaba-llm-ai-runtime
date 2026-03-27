@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     service_name: str = "alibaba-llm-ai-runtime"
     environment: str = "dev"
     log_level: str = "INFO"
+    session_history_max_messages: int = 12
     llm_provider: Literal["stub", "dashscope_openai_compatible"] = "stub"
     llm_model: str = "qwen-plus"
     llm_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"

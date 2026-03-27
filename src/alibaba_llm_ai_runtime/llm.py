@@ -4,6 +4,7 @@ from typing import Any, Protocol
 import httpx
 
 from .config import Settings
+from .sessions import SessionMessage
 
 
 @dataclass(frozen=True)
@@ -21,6 +22,7 @@ class ModelClient(Protocol):
         system_prompt: str,
         trace_id: str,
         context: dict[str, Any],
+        history: list[SessionMessage],
     ) -> ModelCompletion: ...
 
 
@@ -35,11 +37,14 @@ class StubModelClient:
         system_prompt: str,
         trace_id: str,
         context: dict[str, Any],
+        history: list[SessionMessage],
     ) -> ModelCompletion:
         context_keys = ", ".join(sorted(context)) if context else "none"
+        history_messages = len(history)
         text = (
             "Stub provider active. "
-            f"message={user_message!r}; context_keys={context_keys}; trace_id={trace_id}. "
+            f"message={user_message!r}; context_keys={context_keys}; "
+            f"history_messages={history_messages}; trace_id={trace_id}. "
             "RAG and tools are still disabled."
         )
         return ModelCompletion(text=text, provider=self.provider, model=self.model)
@@ -70,11 +75,16 @@ class OpenAICompatibleChatClient:
         system_prompt: str,
         trace_id: str,
         context: dict[str, Any],
+        history: list[SessionMessage],
     ) -> ModelCompletion:
         payload = {
             "model": self._model,
             "messages": [
                 {"role": "system", "content": system_prompt},
+                *[
+                    {"role": message.role, "content": message.content}
+                    for message in history
+                ],
                 {"role": "user", "content": user_message},
             ],
         }

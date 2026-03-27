@@ -21,6 +21,7 @@ This is a bounded `v1` runtime skeleton:
 - `GET /healthz`
 - `POST /v1/runtime/turn`
 - request id and trace id handling
+- bounded in-memory session state
 - configurable `LLM` provider boundary
 - deterministic `stub` mode by default
 - optional `DashScope` OpenAI-compatible adapter path
@@ -38,6 +39,7 @@ Copy `.env.example` to `.env` and adjust only when you want live model calls.
 
 Default local-safe mode:
 - `AI_RUNTIME_LLM_PROVIDER=stub`
+- `AI_RUNTIME_SESSION_HISTORY_MAX_MESSAGES=12`
 
 Optional live adapter path:
 - `AI_RUNTIME_LLM_PROVIDER=dashscope_openai_compatible`

@@ -68,6 +68,7 @@ def test_openai_compatible_client_parses_response() -> None:
             system_prompt="You are helpful.",
             trace_id="trace-live",
             context={},
+            history=[],
         )
         assert result.provider == "dashscope_openai_compatible"
         assert result.model == "qwen-plus"

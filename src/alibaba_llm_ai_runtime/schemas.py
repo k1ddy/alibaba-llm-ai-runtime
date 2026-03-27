@@ -26,6 +26,7 @@ class TurnResponse(BaseModel):
     response_text: str
     model_provider: str
     model_name: str
+    citations_used: int
     citations: list[str] = Field(default_factory=list)
     tools: list[str] = Field(default_factory=list)
     policy_state: Literal["allow"] = "allow"

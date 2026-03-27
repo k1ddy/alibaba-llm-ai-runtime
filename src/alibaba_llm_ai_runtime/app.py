@@ -4,6 +4,7 @@ from fastapi import FastAPI, Header, Request
 
 from .config import Settings, get_settings
 from .llm import build_model_client
+from .retrieval import LocalFileRetriever
 from .schemas import HealthResponse, TurnRequest, TurnResponse
 from .service import SemanticOwner
 from .sessions import InMemorySessionStore
@@ -24,6 +25,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         build_model_client(runtime_settings),
         runtime_settings,
         app.state.session_store,
+        LocalFileRetriever(runtime_settings.knowledge_source_dir),
     )
 
     @app.get("/healthz", response_model=HealthResponse)

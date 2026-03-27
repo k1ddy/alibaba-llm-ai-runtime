@@ -22,6 +22,7 @@ This is a bounded `v1` runtime skeleton:
 - `POST /v1/runtime/turn`
 - request id and trace id handling
 - bounded in-memory session state
+- local file-based retrieval with citations
 - configurable `LLM` provider boundary
 - deterministic `stub` mode by default
 - optional `DashScope` OpenAI-compatible adapter path
@@ -40,6 +41,8 @@ Copy `.env.example` to `.env` and adjust only when you want live model calls.
 Default local-safe mode:
 - `AI_RUNTIME_LLM_PROVIDER=stub`
 - `AI_RUNTIME_SESSION_HISTORY_MAX_MESSAGES=12`
+- `AI_RUNTIME_KNOWLEDGE_SOURCE_DIR=knowledge/source`
+- `AI_RUNTIME_RETRIEVAL_TOP_K=2`
 
 Optional live adapter path:
 - `AI_RUNTIME_LLM_PROVIDER=dashscope_openai_compatible`
@@ -50,3 +53,9 @@ Optional live adapter path:
 ```bash
 pytest
 ```
+
+## Local Knowledge Source
+Source-of-truth files for the current bounded demo live in:
+- `knowledge/source/`
+
+The retrieval index is built in memory at runtime and is intentionally not persisted yet.

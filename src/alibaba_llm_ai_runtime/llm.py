@@ -4,6 +4,7 @@ from typing import Any, Protocol
 import httpx
 
 from .config import Settings
+from .retrieval import RetrievedChunk
 from .sessions import SessionMessage
 
 
@@ -23,6 +24,7 @@ class ModelClient(Protocol):
         trace_id: str,
         context: dict[str, Any],
         history: list[SessionMessage],
+        retrieval_context: list[RetrievedChunk],
     ) -> ModelCompletion: ...
 
 
@@ -38,14 +40,18 @@ class StubModelClient:
         trace_id: str,
         context: dict[str, Any],
         history: list[SessionMessage],
+        retrieval_context: list[RetrievedChunk],
     ) -> ModelCompletion:
         context_keys = ", ".join(sorted(context)) if context else "none"
         history_messages = len(history)
+        retrieved_chunks = len(retrieval_context)
+        first_citation = retrieval_context[0].citation if retrieval_context else "none"
         text = (
             "Stub provider active. "
             f"message={user_message!r}; context_keys={context_keys}; "
-            f"history_messages={history_messages}; trace_id={trace_id}. "
-            "RAG and tools are still disabled."
+            f"history_messages={history_messages}; retrieved_chunks={retrieved_chunks}; "
+            f"first_citation={first_citation}; trace_id={trace_id}. "
+            "Tools are still disabled."
         )
         return ModelCompletion(text=text, provider=self.provider, model=self.model)
 
@@ -76,18 +82,21 @@ class OpenAICompatibleChatClient:
         trace_id: str,
         context: dict[str, Any],
         history: list[SessionMessage],
+        retrieval_context: list[RetrievedChunk],
     ) -> ModelCompletion:
-        payload = {
-            "model": self._model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                *[
-                    {"role": message.role, "content": message.content}
-                    for message in history
-                ],
-                {"role": "user", "content": user_message},
-            ],
-        }
+        messages: list[dict[str, str]] = [{"role": "system", "content": system_prompt}]
+        if retrieval_context:
+            messages.append(
+                {
+                    "role": "system",
+                    "content": _format_grounding_context(retrieval_context),
+                }
+            )
+        messages.extend(
+            {"role": message.role, "content": message.content} for message in history
+        )
+        messages.append({"role": "user", "content": user_message})
+        payload = {"model": self._model, "messages": messages}
         async with httpx.AsyncClient(
             base_url=self._base_url,
             timeout=self._timeout_seconds,
@@ -152,3 +161,10 @@ def _extract_text(response_json: dict[str, Any]) -> str:
         text = str(content).strip()
 
     return text or "Model returned an empty response."
+
+
+def _format_grounding_context(retrieval_context: list[RetrievedChunk]) -> str:
+    lines = ["Use only the grounded context below when answering."]
+    for item in retrieval_context:
+        lines.append(f"[{item.citation}] {item.text}")
+    return "\n".join(lines)

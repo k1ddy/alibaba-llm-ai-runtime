@@ -9,6 +9,7 @@ from alibaba_llm_ai_runtime.llm import (
     StubModelClient,
     build_model_client,
 )
+from alibaba_llm_ai_runtime.retrieval import RetrievedChunk
 
 
 def test_build_model_client_defaults_to_stub() -> None:
@@ -39,7 +40,8 @@ def test_openai_compatible_client_parses_response() -> None:
 
         payload = json.loads(request.content.decode())
         assert payload["model"] == "qwen-plus"
-        assert payload["messages"][1]["content"] == "Hello"
+        assert "Grounded snippet" in payload["messages"][1]["content"]
+        assert payload["messages"][2]["content"] == "Hello"
 
         return httpx.Response(
             200,
@@ -69,6 +71,14 @@ def test_openai_compatible_client_parses_response() -> None:
             trace_id="trace-live",
             context={},
             history=[],
+            retrieval_context=[
+                RetrievedChunk(
+                    citation="source.md:chunk-01",
+                    source_path="source.md",
+                    text="Grounded snippet",
+                    score=1.0,
+                )
+            ],
         )
         assert result.provider == "dashscope_openai_compatible"
         assert result.model == "qwen-plus"

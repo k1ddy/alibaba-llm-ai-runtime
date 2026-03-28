@@ -138,3 +138,29 @@ make smoke-container
 Практический смысл:
 - CI теперь выдаёт не только проверенный build, но и publish-ready artifact;
 - GitOps позже сможет ссылаться либо на `main`, либо на конкретный `sha-*` tag.
+
+## Registry Path Для Alibaba
+Для live deploy в `ACK cn-hangzhou` путь через `GHCR` оказался ненадёжным: первый cluster delivery завис на image pull.
+
+Поэтому текущая инженерная стратегия такая:
+- `GHCR` остаётся как low-friction publish path для CI и внешней проверки;
+- для live deploy в Alibaba нужен более локальный registry path через `ACR`.
+
+CI уже готов к optional publish в `ACR`, если задать GitHub secrets:
+- `ACR_REGISTRY`
+- `ACR_USERNAME`
+- `ACR_PASSWORD`
+- `ACR_NAMESPACE`
+
+Для `ACR_REGISTRY` используй именно login server твоего инстанса.
+Для новых `Personal Edition` это обычно формат:
+- `crpi-<instance-id>.cn-hangzhou.personal.cr.aliyuncs.com`
+
+Ожидаемый image path после включения `ACR`:
+- `<ACR_REGISTRY>/<ACR_NAMESPACE>/alibaba-llm-ai-runtime:main`
+- `<ACR_REGISTRY>/<ACR_NAMESPACE>/alibaba-llm-ai-runtime:sha-<shortsha>`
+
+Важно:
+- для budget-first demo разумно начинать с `Container Registry Personal Edition`;
+- для live `ACK` path в `cn-hangzhou` именно `ACR` считается основным рабочим вариантом;
+- после появления `ACR` надо переключить `dev` overlay в GitOps repo с `GHCR` на `ACR`.

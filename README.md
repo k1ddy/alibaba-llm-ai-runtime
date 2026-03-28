@@ -116,3 +116,21 @@ make quality
 make docker-build
 make smoke-container
 ```
+
+
+## Image Publishing
+Для container image выбран минимальный и дешёвый путь через `GitHub Container Registry`:
+- registry path: `ghcr.io/k1ddy/alibaba-llm-ai-runtime`
+
+Текущая tagging discipline:
+- `main` — moving tag для последнего успешного publish с default branch;
+- `sha-<shortsha>` — immutable tag для конкретного коммита.
+
+Что делает publish boundary:
+- после успешного `verify` job публикует image в `GHCR`;
+- не делает rollout в cluster;
+- не меняет GitOps tag автоматически.
+
+Практический смысл:
+- CI теперь выдаёт не только проверенный build, но и publish-ready artifact;
+- GitOps позже сможет ссылаться либо на `main`, либо на конкретный `sha-*` tag.

@@ -52,6 +52,10 @@ uvicorn alibaba_llm_ai_runtime.app:app --reload
 - `AI_RUNTIME_LLM_API_KEY=<твой Model Studio key>`
 - `AI_RUNTIME_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1`
 
+Важно:
+- локально ключ можно держать в `.env`;
+- для cluster deploy ключ должен приходить через Kubernetes `Secret`, а не через `ConfigMap`.
+
 ## Тесты
 ```bash
 pytest
